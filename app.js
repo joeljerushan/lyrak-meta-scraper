@@ -1,7 +1,7 @@
 const express = require("express");
 const axios = require("axios");
-const cheerio = require("cheerio");
-const followRedirects = require("follow-redirects");
+const ogs = require("open-graph-scraper");
+const twitterCard = require("twitter-card");
 
 const app = express();
 const port = 3000;
@@ -17,37 +17,40 @@ async function scrapeMetadata(url) {
     }
 
     const html = response.data;
-    const $ = cheerio.load(html);
 
-    const title = $("title").text();
-    const metaDescription = $('meta[name="description"]').attr("content");
-    const imageUrl = $('meta[property="og:image"]').attr("content");
-    // Extract other metadata as needed
+    // Fetch Open Graph meta tags
+    const ogTags = await new Promise((resolve, reject) => {
+      ogs({ url }, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results.data);
+        }
+      });
+    });
+
+    // Fetch Twitter card meta tags
+    const twitterTags = await new Promise((resolve, reject) => {
+      twitterCard({ url }, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
 
     return {
-      title,
-      metaDescription,
-      imageUrl,
+      title: ogTags.ogTitle,
+      metaDescription: ogTags.ogDescription,
+      imageUrl: ogTags.ogImage.url,
+      twitterTitle: twitterTags.twitterTitle,
+      twitterDescription: twitterTags.twitterDescription,
+      twitterImageUrl: twitterTags.twitterImage.url,
       // Add more fields as needed
     };
   } catch (error) {
-    console.log("catch error ", error.response);
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      const status = error.response.status;
-      const statusText = error.response.statusText;
-
-      if (status === 403) {
-        return { error: `Forbidden: ${statusText}`, status };
-      } else {
-        return { error: `HTTP error: ${status}`, status };
-      }
-    } else if (error.code === "ENOTFOUND" || error.code === "ECONNREFUSED") {
-      return { error: "URL not found or unreachable.", status: 404 };
-    }
-
-    // For other errors, you might want to return a different status code
+    console.error("Scrape error:", error);
     return { error: "Internal Server Error", status: 500 };
   }
 }
@@ -59,20 +62,10 @@ app.get("/scrape", async (req, res) => {
     const metadata = await scrapeMetadata(url);
     res.json(metadata);
   } catch (error) {
-    console.error(error);
+    console.error("Request error:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-async function resolveShortLink(url) {
-  try {
-    const response = await axios.head(url, { maxRedirects: 5 });
-    return response.request.res.responseUrl;
-  } catch (error) {
-    console.error(error);
-    throw new Error("Unable to resolve short link.");
-  }
-}
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
