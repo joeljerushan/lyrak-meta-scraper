@@ -41,6 +41,9 @@ app.use((req, res) => {
       const twitter_site = $('meta[name="twitter:site"]').attr("content");
       const twitter_creator = $('meta[name="twitter:creator"]').attr("content");
 
+      const urlObject = new URL(url);
+      const domain = urlObject.hostname;
+
       res.json({
         title,
         description,
@@ -54,6 +57,7 @@ app.use((req, res) => {
         twitter_image,
         twitter_site,
         twitter_creator,
+        domain,
       });
     })
     .catch((err) => {
