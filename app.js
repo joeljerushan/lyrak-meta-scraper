@@ -1,20 +1,10 @@
 const express = require("express");
-const axios = require("axios");
-const ogs = require("open-graph-scraper");
-const twitterCard = require("twitter-card");
-
-const urlMetadata = require("url-metadata");
-
 const app = express();
-const port = 3000;
-
 app.set("json spaces", 2);
+const cheerio = require("cheerio");
 
-app.use(express.json());
-
-app.get("/scrape", async (req, res) => {
+app.use((req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
-
   if (!req.query.url)
     return res.json({
       error: "An error has occured, you may have inputted an incorrect url.",
@@ -52,6 +42,6 @@ app.get("/scrape", async (req, res) => {
     });
 });
 
-app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
+const listener = app.listen(3000, () => {
+  console.log("Server started!");
 });
