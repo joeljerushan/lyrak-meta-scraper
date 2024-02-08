@@ -7,8 +7,9 @@ app.use((req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   if (!req.query.url)
     return res.json({
+      success: false,
       error: "An error has occured, you may have inputted an incorrect url.",
-      usage: `https://${req.hostname}/?url=https://google.com`,
+      // usage: `https://${req.hostname}/?url=https://google.com`,
     });
   fetch(req.query.url)
     .then((result) => result.text())
@@ -62,8 +63,9 @@ app.use((req, res) => {
     })
     .catch((err) => {
       return res.json({
+        success: false,
         error: "An error has occured, you may have inputted an incorrect url.",
-        usage: `https://${req.hostname}/?url=https://google.com`,
+        // usage: `https://${req.hostname}/?url=https://google.com`,
       });
     });
 });
