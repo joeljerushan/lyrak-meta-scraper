@@ -32,7 +32,29 @@ app.use((req, res) => {
       var keywords =
         $('meta[property="og:keywords"]').attr("content") ||
         $('meta[name="keywords"]').attr("content");
-      res.json({ title, description, url, site_name, image, icon, keywords });
+
+      const twitter_title = $('meta[name="twitter:title"]').attr("content");
+      const twitter_description = $('meta[name="twitter:description"]').attr(
+        "content"
+      );
+      const twitter_image = $('meta[name="twitter:image"]').attr("content");
+      const twitter_site = $('meta[name="twitter:site"]').attr("content");
+      const twitter_creator = $('meta[name="twitter:creator"]').attr("content");
+
+      res.json({
+        title,
+        description,
+        url,
+        site_name,
+        image,
+        icon,
+        keywords,
+        twitter_title,
+        twitter_description,
+        twitter_image,
+        twitter_site,
+        twitter_creator,
+      });
     })
     .catch((err) => {
       return res.json({
