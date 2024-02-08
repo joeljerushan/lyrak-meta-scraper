@@ -3,6 +3,8 @@ const axios = require("axios");
 const ogs = require("open-graph-scraper");
 const twitterCard = require("twitter-card");
 
+const urlMetadata = require("url-metadata");
+
 const app = express();
 const port = 3000;
 
@@ -10,7 +12,7 @@ app.use(express.json());
 
 async function scrapeMetadata(url) {
   try {
-    const response = await axios.get(url);
+    /* const response = await axios.get(url);
 
     if (response.status !== 200) {
       return { error: `HTTP error: ${response.status}` };
@@ -27,10 +29,10 @@ async function scrapeMetadata(url) {
           resolve(results.data);
         }
       });
-    });
+    }); */
 
     // Fetch Twitter card meta tags
-    const twitterTags = await new Promise((resolve, reject) => {
+    /* const twitterTags = await new Promise((resolve, reject) => {
       twitterCard({ url }, (error, results) => {
         if (error) {
           reject(error);
@@ -38,15 +40,50 @@ async function scrapeMetadata(url) {
           resolve(results);
         }
       });
+    }); */
+
+    const metadata = await urlMetadata("https://x.com/benthompson?s=21", {
+      // custom request headers
+      requestHeaders: {
+        "User-Agent": "url-metadata/3.0 (npm module)",
+        From: "example@example.com",
+      },
+
+      // `fetch` API cache setting for request
+      cache: "no-cache",
+
+      // `fetch` API mode (ex: 'cors', 'no-cors', 'same-origin', etc)
+      mode: "cors",
+
+      // charset to decode response with (ex: 'auto', 'utf-8', 'EUC-JP')
+      // defaults to auto-detect in `Content-Type` header or meta tag
+      // the default `auto` option decodes with `utf-8`
+      // override by passing in charset here (ex: 'windows-1251'):
+      decode: "auto",
+
+      // timeout in milliseconds, default is 10 seconds
+      timeout: 10000,
+
+      // number of characters to truncate description to
+      descriptionLength: 750,
+
+      // force image urls in selected tags to use https,
+      // valid for images & favicons with full paths
+      ensureSecureImageRequest: true,
+
+      // return raw response body as string
+      includeResponseBody: false,
     });
+    console.log("fetched metadata:", metadata);
 
     return {
-      title: ogTags.ogTitle,
-      metaDescription: ogTags.ogDescription,
-      imageUrl: ogTags.ogImage.url,
-      twitterTitle: twitterTags.twitterTitle,
-      twitterDescription: twitterTags.twitterDescription,
-      twitterImageUrl: twitterTags.twitterImage.url,
+      test: "metadata",
+      // title: ogTags.ogTitle,
+      // metaDescription: ogTags.ogDescription,
+      // imageUrl: ogTags.ogImage.url,
+      // twitterTitle: twitterTags.twitterTitle,
+      // twitterDescription: twitterTags.twitterDescription,
+      // twitterImageUrl: twitterTags.twitterImage.url,
       // Add more fields as needed
     };
   } catch (error) {
